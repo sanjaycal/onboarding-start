@@ -5,6 +5,9 @@ project:
   description: "SPI-controlled PWM peripheral for Tiny Tapeout."  
   top_module: "tt_um_uwasic_onboarding_sanjay_jayaram"  # Match your top module name  
 
+  tiles: "1x1"
+  clock_hz: 10000000
+
   source_files:  
     - "spi peripheral"
     - pwm_peripheral.v  
