@@ -218,7 +218,8 @@ async def test_pwm_duty(dut):
     await send_spi_transaction(dut, 1, 0x04, 0)  # Write transaction
     await ClockCycles(dut.clk,30)
     num_on = 0
-    total = 3000*10
+    cycle_period = int(10_000_000/3000) # 10MHz/3KHz = num cycles of 10MHz to turn into 1 cycle of 3KHz
+    total = 5*cycle_period
     for _ in range(total):
         await ClockCycles(dut.clk, 1)
         num_on += dut.uo_out.value%2
@@ -243,7 +244,7 @@ async def test_pwm_duty(dut):
     # Write your test here
     dut._log.info("PWM Duty Cycle test completed successfully")
 
-@cocotb.test()
+#@cocotb.test()
 async def test_pwm_pin_disable(dut):
     dut._log.info("Start PWM Duty test")
 

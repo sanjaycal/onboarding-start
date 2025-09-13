@@ -73,7 +73,7 @@ module tt_um_uwasic_onboarding_sanjay_jayaram(
         data[14 - current_point] <= COPI;
       end else if (current_point == 15) begin //rest of the data and executing the transaction
         if (rw) begin //write
-          memory[address] = {data,COPI};
+          memory[address] <= {data,COPI};
         end
       end
       current_point <= current_point + 1;
