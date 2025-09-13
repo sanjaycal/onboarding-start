@@ -7,6 +7,8 @@ project:
 
   tiles: "1x1"
   clock_hz: 10000000
+  language: "Verilog"
+  discord: "12344man"
 
   source_files:  
     - "spi peripheral"
