@@ -212,22 +212,7 @@ async def test_pwm_duty(dut):
     await ClockCycles(dut.clk, 5)
     dut._log.info("Test project behavior")
 
-
-    await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
-    await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
-    await send_spi_transaction(dut, 1, 0x04, 0)  # Write transaction
-    await ClockCycles(dut.clk,30)
-    num_on = 0
-    cycle_period = int(10_000_000/3000) # 10MHz/3KHz = num cycles of 10MHz to turn into 1 cycle of 3KHz
-    total = 5*cycle_period
-    for _ in range(total):
-        await ClockCycles(dut.clk, 1)
-        num_on += dut.uo_out.value%2
-
-    real_duty_cycle = int(float(num_on)/total)
-    assert real_duty_cycle < 0.01
-    
-    for i in range(1,0xFF):
+    for i in range(0,256):
         dut._log.info(f"starting test for {i/255.0}% duty cycle")
         await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
         await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
