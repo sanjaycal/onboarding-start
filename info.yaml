@@ -11,7 +11,7 @@ project:
   discord: "12344man"
 
   source_files:  
-    - "spi peripheral"
+    #- "spi peripheral"
     - pwm_peripheral.v  
     - project.v
 
