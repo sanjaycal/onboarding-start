@@ -151,11 +151,94 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
+    dut._log.info("Start PWM Duty test")
+
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    dut._log.info("Test project behavior")
+
+
+    await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
+    await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
+    await send_spi_transaction(dut, 1, 0x04, 0x7F)  # Write transaction
+    num_cycles = 0
+    prev_val = 0
+    cur_val = 0
+    cycle_period = int(10_000_000/3000) # 10MHz/3KHz = num cycles of 10MHz to turn into 1 cycle of 3KHz
+    total = 100*cycle_period
+    for _ in range(total):
+        await ClockCycles(dut.clk, 1)
+        cur_val = dut.uo_out.value%2
+        if cur_val == 1 and prev_val == 0:
+            num_cycles += 1
+        prev_val = cur_val
+        
+    assert 99 <= num_cycles <= 101
     # Write your test here
     dut._log.info("PWM Frequency test completed successfully")
 
 
 @cocotb.test()
 async def test_pwm_duty(dut):
+    dut._log.info("Start PWM Duty test")
+
+    # Set the clock period to 100 ns (10 MHz)
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    # Reset
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+    dut._log.info("Test project behavior")
+
+
+    await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
+    await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
+    await send_spi_transaction(dut, 1, 0x04, 0)  # Write transaction
+    await ClockCycles(dut.clk,30)
+    num_on = 0
+    total = 3000*10
+    for _ in range(total):
+        await ClockCycles(dut.clk, 1)
+        num_on += dut.uo_out.value%2
+
+    real_duty_cycle = int(float(num_on)/total)
+    assert real_duty_cycle < 0.01
+    
+    for i in range(1,0xFF):
+        dut._log.info(f"starting test for {i/255.0}% duty cycle")
+        await send_spi_transaction(dut, 1, 0x00, 0xFF)  # Write transaction
+        await send_spi_transaction(dut, 1, 0x02, 0xFF)  # Write transaction
+        await send_spi_transaction(dut, 1, 0x04, i)  # Write transaction
+        await ClockCycles(dut.clk,30)
+        num_on = 0
+        for _ in range(total):
+            await ClockCycles(dut.clk, 1)
+            num_on += dut.uo_out.value%2
+
+        real_duty_cycle = float(num_on)/total
+        expected_duty_cycle = float(i)/0xFF
+        assert abs(real_duty_cycle-expected_duty_cycle) < 0.01
     # Write your test here
     dut._log.info("PWM Duty Cycle test completed successfully")
